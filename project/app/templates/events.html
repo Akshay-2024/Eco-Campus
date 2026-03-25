@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Eco Campus · Active Events</title>
+  <meta name="description" content="Browse all currently active sustainability events on campus." />
+  <style>
+    :root{
+      --bg:#0b1a13; --panel:#0f2a1d; --panel-2:#123423; --text:#ecfffa; --muted:#a6d1bf;
+      --brand:#22c55e; --brand-700:#15803d; --border:rgba(255,255,255,.1);
+      --radius:14px; --shadow:0 10px 30px rgba(0,0,0,.35)
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; color:var(--text);
+      background:
+        radial-gradient(1100px 700px at 90% -10%, rgba(34,197,94,.18), transparent 55%),
+        radial-gradient(900px 700px at -10% 0%, rgba(16,185,129,.14), transparent 45%),
+        var(--bg);
+      line-height:1.6}
+    a{color:inherit; text-decoration:none}
+
+    header{position:sticky; top:0; z-index:50; backdrop-filter:saturate(140%) blur(8px);
+      background:rgba(11,26,19,.7); border-bottom:1px solid var(--border)}
+    .container{max-width:1100px; margin:0 auto; padding:0 20px}
+    .nav{height:64px; display:flex; align-items:center; justify-content:space-between}
+    .brand{display:flex; align-items:center; gap:12px; font-weight:800}
+    .logo{width:34px; height:34px; border-radius:8px; display:grid; place-items:center;
+      background:linear-gradient(135deg,var(--brand),#34d399); color:#042}
+    .links{display:flex; gap:16px; color:var(--muted)}
+
+    .hero{padding:56px 0 28px; text-align:center}
+    .hero h1{font-size:clamp(28px,4vw,42px); margin:.2em 0 .25em}
+    .hero p{max-width:760px; margin:0 auto; color:var(--muted)}
+
+    .controls{margin:18px 0; display:grid; gap:12px; grid-template-columns:repeat(12,1fr)}
+    .controls .field{grid-column:span 12}
+    @media(min-width:900px){
+      .controls .field.search{grid-column:span 6}
+      .controls .field.filters{grid-column:span 6}
+    }
+    .control{display:flex; gap:10px; align-items:center; background:var(--panel); border:1px solid var(--border);
+      padding:10px 12px; border-radius:12px}
+    .control input, .control select{flex:1; background:#0b1f15; color:var(--text); border:1px solid var(--border);
+      border-radius:10px; padding:10px}
+    .control .toggle{display:flex; gap:8px; flex-wrap:wrap}
+    .pill{display:inline-block; padding:6px 12px; border-radius:999px; border:1px solid var(--border); cursor:pointer}
+    .pill.active{background:var(--brand); color:#052e2b; font-weight:800; border-color:transparent}
+
+    .grid{display:grid; gap:18px; grid-template-columns:repeat(12,1fr)}
+    .col-4{grid-column:span 12}
+    @media(min-width:720px){ .col-4{grid-column:span 4} }
+
+    .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow);
+      display:flex; flex-direction:column; gap:10px}
+    .card h3{margin:.2em 0 .1em; font-size:18px}
+    .card p{margin:.2em 0; color:var(--muted)}
+    .meta{display:flex; flex-wrap:wrap; gap:10px; color:var(--muted); font-size:13px}
+    .badge{display:inline-block; font-size:12px; background:#dcfce7; color:#064e3b; padding:4px 10px; border-radius:999px; font-weight:800}
+
+    .bar{height:8px; border-radius:999px; background:rgba(255,255,255,.12); overflow:hidden}
+    .bar > span{display:block; height:100%; background:linear-gradient(90deg, var(--brand), #34d399)}
+
+    .cta{display:flex; gap:10px; align-items:center; margin-top:4px}
+    .btn{display:inline-block; padding:10px 14px; border-radius:10px; border:1px solid var(--border)}
+    .btn.primary{background:var(--brand); color:#052e2b; font-weight:800; border:0}
+    .btn.primary:hover{background:var(--brand-700); color:#eafff3}
+
+    .empty{color:var(--muted); text-align:center; padding:20px; border:1px dashed var(--border); border-radius:12px}
+
+    footer{padding:40px 0; color:var(--muted); border-top:1px solid var(--border); text-align:center; margin-top:40px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand" href="index.html"><span class="logo">🌿</span><span>Eco Campus</span></a>
+      <div class="links">
+        <a href="index.html#tasks">Tasks</a>
+        <a href="index.html#leaderboard">Leaderboard</a>
+        <a href="#">Events</a>
+      </div>
+    </div>
+  </header>
+
+  <section class="hero container">
+    <h1>Active Events</h1>
+    <p>These events are open now or happening soon. Join in, earn points, and help green your campus.</p>
+  </section>
+
+  <main class="container">
+    <!-- Controls -->
+    <div class="controls">
+      <div class="field search">
+        <div class="control">
+          <input id="q" placeholder="Search events by title, location, or description" />
+        </div>
+      </div>
+      <div class="field filters">
+        <div class="control" style="justify-content:space-between">
+          <div class="toggle">
+            <span class="pill active" data-tier="all">All</span>
+            <span class="pill" data-tier="2">Tier 1 · 2 pts</span>
+            <span class="pill" data-tier="5">Tier 2 · 5 pts</span>
+            <span class="pill" data-tier="10">Tier 3 · 10 pts</span>
+          </div>
+          <select id="sort">
+            <option value="soon">Soonest first</option>
+            <option value="latest">Newest added</option>
+            <option value="capacity">Most seats left</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Events Grid -->
+    <div id="grid" class="grid"></div>
+    <div id="empty" class="empty" style="display:none">No active events match your filters.</div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <p>© <span id="y"></span> Eco Campus · Active Events</p>
+    </div>
+  </footer>
+
+  <script>
+    document.getElementById('y').textContent = new Date().getFullYear();
+
+    // --- Demo data (replace with API call) ---
+    const events = [
+      {id:'e1', title:'Plastic Cleanup — North Quad', tier:2, points:2, start:'2025-08-10T10:00:00', end:'2025-08-10T10:30:00', location:'North Quad', slots:25, filled:12, desc:'15‑minute sweep to keep pathways clean.'},
+      {id:'e2', title:'Tree Plantation Drive', tier:5, points:5, start:'2025-08-12T09:00:00', end:'2025-08-12T11:00:00', location:'Botanical Patch', slots:20, filled:18, desc:'Plant and tag a sapling; volunteers will verify.'},
+      {id:'e3', title:'Energy Audit — Lab Block', tier:10, points:10, start:'2025-08-15T14:00:00', end:'2025-08-15T16:00:00', location:'Lab Block B', slots:12, filled:7, desc:'Survey classrooms for energy‑saving opportunities.'},
+      {id:'e4', title:'Poster Campaign Sprint', tier:5, points:5, start:'2025-08-08T08:00:00', end:'2025-08-09T18:00:00', location:'Campus-wide', slots:40, filled:22, desc:'Design & place awareness posters (materials provided).'},
+      {id:'e5', title:'E‑waste Collection Booth', tier:2, points:2, start:'2025-08-07T09:00:00', end:'2025-08-08T17:00:00', location:'Main Gate', slots:30, filled:29, desc:'Drop your small e‑waste for proper recycling.'}
+    ];
+
+    const now = new Date();
+
+    // compute active: end >= now
+    function isActive(ev){ return new Date(ev.end) >= now; }
+
+    // Elements
+    const grid = document.getElementById('grid');
+    const empty = document.getElementById('empty');
+    const q = document.getElementById('q');
+    const sortSel = document.getElementById('sort');
+    const tierPills = document.querySelectorAll('.pill[data-tier]');
+
+    let currentTier = 'all';
+
+    // Render helpers
+    function pct(a,b){ return Math.max(0, Math.min(100, Math.round((a/b)*100))); }
+    function fmtDate(d){ const dt = new Date(d); return dt.toLocaleString(undefined,{dateStyle:'medium', timeStyle:'short'}); }
+
+    function render(){
+      const term = q.value.trim().toLowerCase();
+      let items = events.filter(isActive);
+      if(currentTier !== 'all') items = items.filter(e => String(e.points) === String(currentTier));
+      if(term){ items = items.filter(e => (e.title+e.location+e.desc).toLowerCase().includes(term)); }
+
+      const sort = sortSel.value;
+      if(sort === 'soon') items.sort((a,b) => new Date(a.start) - new Date(b.start));
+      if(sort === 'latest') items.sort((a,b) => (b._added||0) - (a._added||0));
+      if(sort === 'capacity') items.sort((a,b) => (b.slots-b.filled) - (a.slots-a.filled));
+
+      grid.innerHTML = '';
+      if(!items.length){ empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+
+      for(const e of items){
+        const free = Math.max(0, e.slots - e.filled);
+        const percent = pct(e.filled, e.slots);
+        const card = document.createElement('article');
+        card.className = 'card col-4';
+        card.innerHTML = `
+          <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:10px">
+            <span class="badge">${e.points} pts</span>
+            <span style="color:${free>0?'#a6d1bf':'#fca5a5'}; font-size:12px">${free>0? free+ ' seats left':'Waitlist'}</span>
+          </div>
+          <h3>${e.title}</h3>
+          <p>${e.desc}</p>
+          <div class="meta">
+            <span>When: <strong>${fmtDate(e.start)}</strong> → <strong>${fmtDate(e.end)}</strong></span>
+            <span>Where: <strong>${e.location}</strong></span>
+          </div>
+          <div class="bar" aria-hidden><span style="width:${percent}%"></span></div>
+          <div class="cta">
+            <a class="btn primary" href="#">View details</a>
+            <a class="btn" href="#">Add to calendar</a>
+          </div>`;
+        grid.appendChild(card);
+      }
+    }
+
+    // Interactions
+    q.addEventListener('input', render);
+    sortSel.addEventListener('change', render);
+    tierPills.forEach(p=>p.addEventListener('click', ()=>{
+      tierPills.forEach(x=>x.classList.remove('active'));
+      p.classList.add('active');
+      currentTier = p.dataset.tier;
+      render();
+    }));
+
+    // Mark added time for demo sorting
+    events.forEach(e=> e._added = Date.now() - Math.random()*1e7);
+    render();
+  </script>
+</body>
+</html>

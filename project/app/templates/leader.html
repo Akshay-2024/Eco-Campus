@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Eco Campus · Leaderboard</title>
+  <meta name="description" content="View student rankings by green points." />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root{
+      --bg:#0b1a13; --panel:#0f2a1d; --panel-2:#123423; --text:#ecfffa; --muted:#a6d1bf;
+      --brand:#22c55e; --brand-700:#15803d; --border:rgba(255,255,255,.08); --radius:14px; --shadow:0 10px 30px rgba(0,0,0,.35);
+      --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32;
+    }
+    *{box-sizing:border-box}
+    body{margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; color:var(--text);
+      background: radial-gradient(1100px 700px at 90% -10%, rgba(34,197,94,.18), transparent 55%),
+                  radial-gradient(900px 700px at -10% 0%, rgba(16,185,129,.14), transparent 45%), var(--bg);
+      line-height:1.6}
+    a{color:inherit; text-decoration:none}
+    .container{max-width:1100px; margin:0 auto; padding:0 20px}
+    header{position:sticky; top:0; z-index:50; backdrop-filter:saturate(140%) blur(8px); background:rgba(11,26,19,.7); border-bottom:1px solid var(--border)}
+    .nav{height:64px; display:flex; align-items:center; justify-content:space-between}
+    .brand{display:flex; align-items:center; gap:12px; font-weight:800}
+    .logo{width:34px; height:34px; border-radius:8px; display:grid; place-items:center; background:linear-gradient(135deg,var(--brand),#34d399); color:#042}
+    .links{display:flex; gap:16px; color:var(--muted)}
+
+    .section{padding:28px 0}
+    h1{font-size:clamp(26px,4vw,36px); margin:.5em 0 .2em}
+    h2{font-size:clamp(20px,3vw,26px); margin:0 0 10px}
+    p.muted{color:var(--muted); margin:0 0 12px}
+
+    .panel{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:16px; box-shadow:var(--shadow)}
+    .row{display:grid; gap:16px; grid-template-columns:repeat(12,1fr)}
+    .col-8{grid-column:span 12}
+    .col-4{grid-column:span 12}
+    @media(min-width:900px){ .col-8{grid-column:span 8} .col-4{grid-column:span 4} }
+
+    /* Leaderboard specific styles */
+    .leaderboard-header {
+      background: linear-gradient(135deg, var(--brand), var(--brand-700));
+      padding: 1.25rem;
+      border-radius: var(--radius);
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .leaderboard-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .filter-btn {
+      background: rgba(255, 255, 255, 0.1);
+      color: var(--text);
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--text);
+      color: var(--brand-700);
+    }
+
+    .leaderboard-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .leaderboard-table th {
+      text-align: left;
+      padding: 1rem;
+      font-weight: 600;
+      color: var(--muted);
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .leaderboard-table td {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .rank-cell {
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .top-1 .rank-cell {
+      color: var(--gold);
+    }
+
+    .top-2 .rank-cell {
+      color: var(--silver);
+    }
+
+    .top-3 .rank-cell {
+      color: var(--bronze);
+    }
+
+    .student-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .student-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #166534, #22c55e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .student-details {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .student-name {
+      font-weight: 600;
+      font-size: 1rem;
+      margin-bottom: 0.2rem;
+    }
+
+    .student-meta {
+      font-size: 0.8rem;
+      color: var(--muted);
+      display: flex;
+      gap: 12px;
+    }
+
+    .points-cell {
+      font-weight: 700;
+      color: var(--brand);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    .podium {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin: 1.5rem 0;
+      flex-wrap: wrap;
+    }
+
+    .podium-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      flex: 1;
+      min-width: 180px;
+      max-width: 280px;
+    }
+
+    .podium-rank {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      font-weight: bold;
+      margin-bottom: -30px;
+      z-index: 2;
+      position: relative;
+    }
+
+    .podium-1 .podium-rank {
+      background: var(--gold);
+      color: #8a6d00;
+    }
+
+    .podium-2 .podium-rank {
+      background: var(--silver);
+      color: #555;
+    }
+
+    .podium-3 .podium-rank {
+      background: var(--bronze);
+      color: #6a3805;
+    }
+
+    .podium-stand {
+      width: 100%;
+      padding-top: 60px;
+      background: var(--panel-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 60px 1rem 1.25rem;
+    }
+
+    .podium-1 .podium-stand {
+      height: 220px;
+    }
+
+    .podium-2 .podium-stand {
+      height: 220px;
+    }
+
+    .podium-3 .podium-stand {
+      height: 220px;
+    }
+
+    .podium-name {
+      font-weight: 700;
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .podium-details {
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .podium-points {
+      margin-top: 0.5rem;
+      font-weight: 600;
+      color: var(--brand);
+    }
+
+    .empty {
+      color: var(--muted);
+      text-align: center;
+      padding: 2rem;
+      border: 1px dashed var(--border);
+      border-radius: var(--radius);
+    }
+
+    /* Mobile Styles */
+    @media (max-width: 768px) {
+      .leaderboard-table {
+        display: block;
+        overflow-x: auto;
+      }
+      
+      .leaderboard-header {
+        flex-direction: column;
+        text-align: center;
+        gap: 12px;
+      }
+      
+      .filters {
+        justify-content: center;
+      }
+      
+      .leaderboard-table th:nth-child(4),
+      .leaderboard-table td:nth-child(4) {
+        display: none;
+      }
+      
+      .student-meta {
+        flex-direction: column;
+        gap: 4px;
+      }
+    }
+
+    @media (max-width: 576px) {
+      .podium {
+        flex-direction: column;
+        align-items: center;
+      }
+      
+      .podium-item {
+        width: 100%;
+        max-width: 260px;
+      }
+      
+      .leaderboard-table th:nth-child(3),
+      .leaderboard-table td:nth-child(3) {
+        display: none;
+      }
+    }
+
+    /* Animation */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .panel {
+      animation: fadeIn 0.8s ease-out;
+    }
+    
+    .podium-item {
+      animation: fadeIn 0.8s ease-out;
+      animation-fill-mode: backwards;
+    }
+    
+    .podium-1 { animation-delay: 0.2s; }
+    .podium-2 { animation-delay: 0.4s; }
+    .podium-3 { animation-delay: 0.6s; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container nav">
+      <a class="brand" href="#"><span class="logo">                    <i class="fas fa-seedling"></i>
+</span><span>Eco Campus · Leaderboard</span></a>
+      <div class="links">
+        <a href="{% url 'home' %}"><i class="fas fa-home"></i> Home</a>
+        {% if user.is_authenticated %}
+  <a href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+{% else %}
+  <a href="{% url 'login' %}"><i class="fas fa-sign-in-alt"></i> Login</a>
+{% endif %}
+
+        <a href="{% url 'profile' %}"><i class="fas fa-user"></i> Profile</a></div>
+    </div>
+  </header>
+
+  <main class="container section">
+    <h1>Green Points Leaderboard</h1>
+    <p class="muted">Track student participation and rankings in sustainability activities</p>
+
+    <div class="panel">
+      <div class="leaderboard-header">
+        <div class="leaderboard-title">
+          <i class="fas fa-trophy"></i>
+          <span>Top Sustainability Champions</span>
+        </div>
+        <div class="filters">
+          <button class="filter-btn active">All Departments</button>
+          <button class="filter-btn">Environmental Science</button>
+          <button class="filter-btn">Engineering</button>
+          <button class="filter-btn">Business</button>
+        </div>
+      </div>
+      
+      <!-- Podium for top 3 -->
+      <div class="podium">
+        <div class="podium-item podium-2">
+          <div class="podium-rank">2</div>
+          <div class="podium-stand">
+            <div class="student-avatar">MJ</div>
+            <div class="podium-name">Maya Johnson</div>
+            <div class="podium-details">
+              <div>Environmental Science</div>
+              <div>4th Semester</div>
+            </div>
+            <div class="podium-points">
+              <i class="fas fa-leaf"></i> 2,150 Points
+            </div>
+          </div>
+        </div>
+        
+        <div class="podium-item podium-1">
+          <div class="podium-rank">1</div>
+          <div class="podium-stand">
+            <div class="student-avatar">AJ</div>
+            <div class="podium-name">Alex Johnson</div>
+            <div class="podium-details">
+              <div>Environmental Science</div>
+              <div>5th Semester</div>
+            </div>
+            <div class="podium-points">
+              <i class="fas fa-leaf"></i> 2,450 Points
+            </div>
+          </div>
+        </div>
+        
+        <div class="podium-item podium-3">
+          <div class="podium-rank">3</div>
+          <div class="podium-stand">
+            <div class="student-avatar">RS</div>
+            <div class="podium-name">Ryan Smith</div>
+            <div class="podium-details">
+              <div>Civil Engineering</div>
+              <div>6th Semester</div>
+            </div>
+            <div class="podium-points">
+              <i class="fas fa-leaf"></i> 1,980 Points
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Full Leaderboard Table -->
+      <table class="leaderboard-table">
+        <thead>
+          <tr>
+            <th width="80">Rank</th>
+            <th>Student</th>
+            <th>Department</th>
+            <th>Semester</th>
+            <th width="150">Points</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="top-1">
+            <td class="rank-cell">1</td>
+            <td>
+              <div class="student-info">
+                <div class="student-avatar">AJ</div>
+                <div class="student-details">
+                  <div class="student-name">Alex Johnson</div>
+                  <div class="student-meta">
+                    <span>alex.j@campus.edu</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>Environmental Science</td>
+            <td>5th Semester</td>
+            <td class="points-cell"><i class="fas fa-leaf"></i> 2,450</td>
+          </tr>
+          <tr class="top-2">
+            <td class="rank-cell">2</td>
+            <td>
+              <div class="student-info">
+                <div class="student-avatar">MJ</div>
+                <div class="student-details">
+                  <div class="student-name">Maya Johnson</div>
+                  <div class="student-meta">
+                    <span>maya.j@campus.edu</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>Environmental Science</td>
+            <td>4th Semester</td>
+            <td class="points-cell"><i class="fas fa-leaf"></i> 2,150</td>
+          </tr>
+          <tr class="top-3">
+            <td class="rank-cell">3</td>
+            <td>
+              <div class="student-info">
+                <div class="student-avatar">RS</div>
+                <div class="student-details">
+                  <div class="student-name">Ryan Smith</div>
+                  <div class="student-meta">
+                    <span>ryan.s@campus.edu</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>Civil Engineering</td>
+            <td>6th Semester</td>
+            <td class="points-cell"><i class="fas fa-leaf"></i> 1,980</td>
+          </tr>
+          <tr>
+            <td class="rank-cell">4</td>
+            <td>
+              <div class="student-info">
+                <div class="student-avatar">SP</div>
+                <div class="student-details">
+                  <div class="student-name">Sarah Patel</div>
+                  <div class="student-meta">
+                    <span>sarah.p@campus.edu</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>Business Admin</td>
+            <td>3rd Semester</td>
+            <td class="points-cell"><i class="fas fa-leaf"></i> 1,875</td>
+          </tr>
+          <tr>
+            <td class="rank-cell">5</td>
+            <td>
+              <div class="student-info">
+                <div class="student-avatar">DL</div>
+                <div class="student-details">
+                  <div class="student-name">David Lee</div>
+                  <div class="student-meta">
+                    <span>david.l@campus.edu</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>Computer Science</td>
+            <td>7th Semester</td>
+            <td class="points-cell"><i class="fas fa-leaf"></i> 1,780</td>
+          </tr>
+          <tr>
+            <td class="rank-cell">6</td>
+            <td>
+              <div class="student-info">
+                <div class="student-avatar">EC</div>
+                <div class="student-details">
+                  <div class="student-name">Emma Chen</div>
+                  <div class="student-meta">
+                    <span>emma.c@campus.edu</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>Environmental Science</td>
+            <td>5th Semester</td>
+            <td class="points-cell"><i class="fas fa-leaf"></i> 1,650</td>
+          </tr>
+          <tr>
+            <td class="rank-cell">7</td>
+            <td>
+              <div class="student-info">
+                <div class="student-avatar">MW</div>
+                <div class="student-details">
+                  <div class="student-name">Michael Wang</div>
+                  <div class="student-meta">
+                    <span>michael.w@campus.edu</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>Electrical Eng</td>
+            <td>4th Semester</td>
+            <td class="points-cell"><i class="fas fa-leaf"></i> 1,520</td>
+          </tr>
+          <tr>
+            <td class="rank-cell">8</td>
+            <td>
+              <div class="student-info">
+                <div class="student-avatar">SG</div>
+                <div class="student-details">
+                  <div class="student-name">Sophia Garcia</div>
+                  <div class="student-meta">
+                    <span>sophia.g@campus.edu</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>Biology</td>
+            <td>6th Semester</td>
+            <td class="points-cell"><i class="fas fa-leaf"></i> 1,480</td>
+          </tr>
+          <tr>
+            <td class="rank-cell">9</td>
+            <td>
+              <div class="student-info">
+                <div class="student-avatar">JR</div>
+                <div class="student-details">
+                  <div class="student-name">James Rodriguez</div>
+                  <div class="student-meta">
+                    <span>james.r@campus.edu</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>Mechanical Eng</td>
+            <td>5th Semester</td>
+            <td class="points-cell"><i class="fas fa-leaf"></i> 1,420</td>
+          </tr>
+          <tr>
+            <td class="rank-cell">10</td>
+            <td>
+              <div class="student-info">
+                <div class="student-avatar">AK</div>
+                <div class="student-details">
+                  <div class="student-name">Aisha Khan</div>
+                  <div class="student-meta">
+                    <span>aisha.k@campus.edu</span>
+                  </div>
+                </div>
+              </div>
+            </td>
+            <td>Business Admin</td>
+            <td>4th Semester</td>
+            <td class="points-cell"><i class="fas fa-leaf"></i> 1,380</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </main>
+
+  <script>
+    // Filter functionality
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        document.querySelector('.filter-btn.active').classList.remove('active');
+        this.classList.add('active');
+        // Here you would typically filter the leaderboard data
+        // For demo purposes, we're just changing the active state
+      });
+    });
+  </script>
+</body>
+</html>
